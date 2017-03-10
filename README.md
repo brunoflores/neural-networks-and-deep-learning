@@ -1,21 +1,39 @@
 # Code samples for "Neural Networks and Deep Learning"
 
-This repository contains code samples for my book on ["Neural Networks
-and Deep Learning"](http://neuralnetworksanddeeplearning.com).
+This repository contains code samples for the book ["Neural Networks
+and Deep Learning"](http://neuralnetworksanddeeplearning.com) as well as my solutions for some of the problems in it.
 
-The code is written for Python 2.6 or 2.7. Michal Daniel Dobrzanski
-has a repository for Python 3
-[here](https://github.com/MichalDanielDobrzanski/DeepLearningPython35). I
-will not be updating the current repository for Python 3
-compatibility.
+## Chapter 2
 
-The program `src/network3.py` uses version 0.6 or 0.7 of the Theano
-library.  It needs modification for compatibility with later versions
-of the library.  I will not be making such modifications.
+### Fully matrix-based approach
 
-As the code is written to accompany the book, I don't intend to add
-new features. However, bug reports are welcome, and you should feel
-free to fork and modify the code.
+My solution for the problem in Chapter 2: "Fully matrix-based approach to back-propagation over a mini-batch"
+is in [`src/network_matrix_based.py`](`src/network_matrix_based.py`).
+
+Original implementation by the author performed as `cProfile` shows below:
+
+```text
+54861403 function calls (54857353 primitive calls) in 485.136 seconds
+```
+
+```text
+ncalls   tottime  percall  cumtime   percall  filename:lineno(function)
+150000   21.762   0.000    452.468   0.003    network.py:74(update_mini_batch)
+```
+
+### Solution
+
+Taking advantage of linear algebra, my proposed approach performed quite a bit faster
+than looping over the mini-batch:
+
+```text
+16159577 function calls (16155527 primitive calls) in 133.310 seconds
+```
+
+```text
+ncalls   tottime  percall  cumtime   percall  filename:lineno(function)
+150000   2.278    0.000    104.758   0.001    network_matrix_based.py:94(update_mini_batch)
+```
 
 ## License
 
