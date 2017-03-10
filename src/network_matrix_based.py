@@ -105,6 +105,9 @@ class Network(object):
         delta, nabla_b, nabla_w = self.output_error(zs, activations, y)
         nabla_b, nabla_w = self.backward_pass(delta, zs, activations, nabla_b, nabla_w)
 
+        # Sum the deltas of every neuron in each layer
+        nabla_b = [np.sum(delta, axis=1, keepdims=True) for delta in nabla_b]
+
         return nabla_b, nabla_w
 
     def forward_pass(self, x):
@@ -149,7 +152,7 @@ class Network(object):
         nabla_w = [np.zeros(w.shape) for w in self.weights]
 
         delta = self.cost_derivative_for_output(activations[-1], y) * sigmoid_prime(zs[-1])
-        nabla_b[-1] = np.sum(delta, axis=1, keepdims=True)
+        nabla_b[-1] = delta
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
         return delta, nabla_b, nabla_w
 
@@ -170,7 +173,7 @@ class Network(object):
         """
         for l in range(2, self.num_layers):
             delta = np.dot(self.weights[-l + 1].transpose(), delta) * sigmoid_prime(zs[-l])
-            nabla_b[-l] = np.sum(delta, axis=1, keepdims=True)
+            nabla_b[-l] = delta
             nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
         return nabla_b, nabla_w
 
