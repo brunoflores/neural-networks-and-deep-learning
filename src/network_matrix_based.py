@@ -95,30 +95,83 @@ class Network(object):
         ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
         to ``self.biases`` and ``self.weights``.
 
-        :param mini_batch: a list of tuples ``(x, y)``
-        :return: a tuple ``(nabla_b, nabla_w)``
+        :param mini_batch: A list of tuples ``(x, y)``
+        :return: A tuple ``(nabla_b, nabla_w)``
         """
         x = np.asarray([x for x, y in mini_batch]).transpose()[0]
         y = np.asarray([y for x, y in mini_batch]).transpose()[0]
+
+        zs, activations = self.forward_pass(x)
+        delta, nabla_b, nabla_w = self.output_error(zs, activations, y)
+        nabla_b, nabla_w = self.backward_pass(delta, zs, activations, nabla_b, nabla_w)
+
+        return nabla_b, nabla_w
+
+    def forward_pass(self, x):
+        """
+        Perform a forward pass through the net for inputs in the mini-match to
+        compute a list of weighted inputs, ``zs``, for every layer z_l and
+        a list of activations, ``activations``, for every layer a_l.
+
+        It does this by summing all weight, w_l, multiplied by
+        activations from the previous layer, a_l-1, plus a bias.
+        Keep them because they will be used again to calculate the error, delta.
+
+        The list of activations is just the weighted inputs with the
+        activation function applied everywhere.
+
+        :param x: A matrix whose columns are the vectors in the mini-batch
+        :return: List of weighted inputs and list of activations
+        """
         activations = [x]
         zs = []
-
-        nabla_b = [np.zeros(b.shape) for b in self.biases]
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
-
         for b, w in zip(self.biases, self.weights):
             zs.append(np.dot(w, activations[-1]) + b)
             activations.append(sigmoid(zs[-1]))
+        return zs, activations
+
+    def output_error(self, zs, activations, y):
+        """
+        After a forward pass, compute the output error for every input in the mini-batch and
+        back-propagate to the 2nd-last layer.
+
+        Output error, delta, is here the derivative of C times the derivative of sigmoid using the
+        weighted input for the last layer.
+        Back-propagate to the previous layer by computing the dot product against the transposed activations
+        from the previous layer.
+
+        :param zs: List of weighted inputs
+        :param activations: List of activations
+        :param y: Ground-truth for inputs in the mini-batch
+        :return: Output error, initial layer-by-layer lists of changes in biases and weights
+        """
+        nabla_b = [np.zeros(b.shape) for b in self.biases]
+        nabla_w = [np.zeros(w.shape) for w in self.weights]
 
         delta = self.cost_derivative_for_output(activations[-1], y) * sigmoid_prime(zs[-1])
         nabla_b[-1] = np.sum(delta, axis=1, keepdims=True)
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+        return delta, nabla_b, nabla_w
 
+    def backward_pass(self, delta, zs, activations, nabla_b, nabla_w):
+        """
+        Having the output error, perform a backward pass through the net calculating changes in biases and weights.
+
+        Update the error, delta, about every layer using weights from the previous layer.
+        Back-propagate until the end by computing the dot product against the transposed activations
+        from the previous layer.
+
+        :param delta: Output error
+        :param zs: List of weighted inputs
+        :param activations: List of activations
+        :param nabla_b: Layer-by-layer list of changes in biases
+        :param nabla_w: Layer-by-layer list of changes in weights
+        :return: Final layer-by-layer lists of changes in biases and weights
+        """
         for l in range(2, self.num_layers):
             delta = np.dot(self.weights[-l + 1].transpose(), delta) * sigmoid_prime(zs[-l])
             nabla_b[-l] = np.sum(delta, axis=1, keepdims=True)
             nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
-
         return nabla_b, nabla_w
 
     def evaluate(self, test_data):
