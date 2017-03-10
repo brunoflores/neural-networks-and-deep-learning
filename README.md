@@ -8,7 +8,7 @@ and Deep Learning"](http://neuralnetworksanddeeplearning.com) as well as my solu
 ### Fully matrix-based approach
 
 My solution for the problem in Chapter 2: "Fully matrix-based approach to back-propagation over a mini-batch"
-is in [`src/network_matrix_based.py`](`src/network_matrix_based.py`).
+is in [`src/network_matrix_based.py`](src/network_matrix_based.py).
 
 Original implementation by the author performed as `cProfile` shows below:
 
