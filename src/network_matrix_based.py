@@ -76,12 +76,10 @@ class Network(object):
         is the learning rate."""
         nabla_b, nabla_w = self.back_propagate_matrix_based(mini_batch)
 
-        # Update weights
-        # nabla_w is list of two numpy arrays 30x784 and 10x30
+        # Gradient descent: update weights
         self.weights = [w - (eta / len(mini_batch)) * nw
                         for w, nw in zip(self.weights, nabla_w)]
-        # Update biases
-        # nabla_b is list of two numpy arrays 30x1 and 10x1
+        # Gradient descent: update biases
         self.biases = [b - (eta / len(mini_batch)) * np.asarray(nb)
                        for b, nb in zip(self.biases, nabla_b)]
 
