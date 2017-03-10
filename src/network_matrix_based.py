@@ -99,6 +99,9 @@ class Network(object):
         x = np.asarray([x for x, y in mini_batch]).transpose()[0]
         y = np.asarray([y for x, y in mini_batch]).transpose()[0]
 
+        # These are the three steps proposed by Nielsen in his book,
+        # fourth step is performed by the caller of this method when
+        # updating weights and biases in the net.
         zs, activations = self.forward_pass(x)
         delta, nabla_b, nabla_w = self.output_error(zs, activations, y)
         nabla_b, nabla_w = self.backward_pass(delta, zs, activations, nabla_b, nabla_w)
