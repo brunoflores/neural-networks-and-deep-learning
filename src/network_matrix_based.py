@@ -108,12 +108,23 @@ class Network(object):
                        for b, nb in zip(self.biases, nabla_b)]
 
     def back_propagate_matrix_based(self, mini_batch):
+        """
+        A Matrix-based approach for computing gradients for all training
+        examples in a mini-batch simultaneously.
+
+        Return a tuple ``(nabla_b, nabla_w)`` representing the
+        gradient for the cost function C_x.  ``nabla_b`` and
+        ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
+        to ``self.biases`` and ``self.weights``.
+
+        :param mini_batch: a list of tuples ``(x, y)``
+        :return: a tuple ``(nabla_b, nabla_w)``
+        """
         x = np.asarray([x for x, y in mini_batch]).transpose()[0]
         y = np.asarray([y for x, y in mini_batch]).transpose()[0]
         activations = [x]
         zs = []
 
-        # data returned from this method has the same shape as self.biases and self.weights
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
 
