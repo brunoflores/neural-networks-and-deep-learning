@@ -31,29 +31,7 @@ class Network(object):
         ever used in computing the outputs from later layers."""
         self.num_layers = len(sizes)
         self.sizes = sizes
-
-        # Assuming a [9, 5, 2] net:
-        #
-        # | 1
-        # | 2
-        # | 3
-        # | 4
-        # | 5
-        #
-        # | 1
-        # | 2
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
-
-        # Assuming a [9, 5, 2] net:
-        #
-        # | 1 2 3 4 5 6 7 8 9
-        # | 2
-        # | 3
-        # | 4
-        # | 5
-        #
-        # | 1 2 3 4 5
-        # | 2
         self.weights = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]
 
     def feed_forward(self, a):
