@@ -32,7 +32,7 @@ versions of Theano.
 
 #### Libraries
 # Standard library
-import cPickle
+import pickle
 import gzip
 
 # Third-party libraries
@@ -52,21 +52,21 @@ from theano.tensor import tanh
 
 
 #### Constants
-GPU = True
+GPU = False
 if GPU:
-    print "Trying to run under a GPU.  If this is not desired, then modify "+\
-        "network3.py\nto set the GPU flag to False."
+    print("Trying to run under a GPU.  If this is not desired, then modify " +
+          "network3.py\nto set the GPU flag to False.")
     try: theano.config.device = 'gpu'
     except: pass # it's already set
     theano.config.floatX = 'float32'
 else:
-    print "Running with a CPU.  If this is not desired, then the modify "+\
-        "network3.py to set\nthe GPU flag to True."
+    print("Running with a CPU.  If this is not desired, then the modify " +
+          "network3.py to set\nthe GPU flag to True.")
 
 #### Load the MNIST data
 def load_data_shared(filename="../data/mnist.pkl.gz"):
     f = gzip.open(filename, 'rb')
-    training_data, validation_data, test_data = cPickle.load(f)
+    training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
     def shared(data):
         """Place the data into shared variables.  This allows Theano to copy
@@ -96,8 +96,8 @@ class Network(object):
         self.y = T.ivector("y")
         init_layer = self.layers[0]
         init_layer.set_inpt(self.x, self.x, self.mini_batch_size)
-        for j in xrange(1, len(self.layers)):
-            prev_layer, layer  = self.layers[j-1], self.layers[j]
+        for j in range(1, len(self.layers)):
+            prev_layer, layer = self.layers[j-1], self.layers[j]
             layer.set_inpt(
                 prev_layer.output, prev_layer.output_dropout, self.mini_batch_size)
         self.output = self.layers[-1].output
@@ -111,62 +111,54 @@ class Network(object):
         test_x, test_y = test_data
 
         # compute number of minibatches for training, validation and testing
-        num_training_batches = size(training_data)/mini_batch_size
-        num_validation_batches = size(validation_data)/mini_batch_size
-        num_test_batches = size(test_data)/mini_batch_size
+        num_training_batches = size(training_data) // mini_batch_size
+        num_validation_batches = size(validation_data) // mini_batch_size
+        num_test_batches = size(test_data) // mini_batch_size
 
         # define the (regularized) cost function, symbolic gradients, and updates
         l2_norm_squared = sum([(layer.w**2).sum() for layer in self.layers])
-        cost = self.layers[-1].cost(self)+\
-               0.5*lmbda*l2_norm_squared/num_training_batches
+        cost = self.layers[-1].cost(self) + 0.5 * lmbda * l2_norm_squared / num_training_batches
         grads = T.grad(cost, self.params)
         updates = [(param, param-eta*grad)
                    for param, grad in zip(self.params, grads)]
 
         # define functions to train a mini-batch, and to compute the
         # accuracy in validation and test mini-batches.
-        i = T.lscalar() # mini-batch index
+        i = T.lscalar()  # mini-batch index
         train_mb = theano.function(
             [i], cost, updates=updates,
             givens={
-                self.x:
-                training_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size],
-                self.y:
-                training_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
+                self.x: training_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size],
+                self.y: training_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
             })
         validate_mb_accuracy = theano.function(
             [i], self.layers[-1].accuracy(self.y),
             givens={
-                self.x:
-                validation_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size],
-                self.y:
-                validation_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
+                self.x: validation_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size],
+                self.y: validation_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
             })
         test_mb_accuracy = theano.function(
             [i], self.layers[-1].accuracy(self.y),
             givens={
-                self.x:
-                test_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size],
-                self.y:
-                test_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
+                self.x: test_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size],
+                self.y: test_y[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
             })
         self.test_mb_predictions = theano.function(
             [i], self.layers[-1].y_out,
             givens={
-                self.x:
-                test_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
+                self.x: test_x[i*self.mini_batch_size: (i+1)*self.mini_batch_size]
             })
         # Do the actual training
         best_validation_accuracy = 0.0
-        for epoch in xrange(epochs):
-            for minibatch_index in xrange(num_training_batches):
+        for epoch in range(epochs):
+            for minibatch_index in range(num_training_batches):
                 iteration = num_training_batches*epoch+minibatch_index
                 if iteration % 1000 == 0:
                     print("Training mini-batch number {0}".format(iteration))
                 cost_ij = train_mb(minibatch_index)
                 if (iteration+1) % num_training_batches == 0:
                     validation_accuracy = np.mean(
-                        [validate_mb_accuracy(j) for j in xrange(num_validation_batches)])
+                        [validate_mb_accuracy(j) for j in range(num_validation_batches)])
                     print("Epoch {0}: validation accuracy {1:.2%}".format(
                         epoch, validation_accuracy))
                     if validation_accuracy >= best_validation_accuracy:
@@ -175,7 +167,7 @@ class Network(object):
                         best_iteration = iteration
                         if test_data:
                             test_accuracy = np.mean(
-                                [test_mb_accuracy(j) for j in xrange(num_test_batches)])
+                                [test_mb_accuracy(j) for j in range(num_test_batches)])
                             print('The corresponding test accuracy is {0:.2%}'.format(
                                 test_accuracy))
         print("Finished training network.")
