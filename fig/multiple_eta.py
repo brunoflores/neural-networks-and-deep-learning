@@ -15,7 +15,7 @@ import sys
 # My library
 sys.path.append('../src/')
 import mnist_loader
-import network2
+import network2_matrix_based as network2
 
 # Third-party libraries
 import matplotlib.pyplot as plt
@@ -26,9 +26,11 @@ LEARNING_RATES = [0.025, 0.25, 2.5]
 COLORS = ['#2A6EA6', '#FFCD33', '#FF7033']
 NUM_EPOCHS = 30
 
+
 def main():
     run_networks()
     make_plot()
+
 
 def run_networks():
     """Train networks using three different values for the learning rate,
@@ -39,10 +41,10 @@ def run_networks():
     # Make results more easily reproducible
     random.seed(12345678)
     np.random.seed(12345678)
-    training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     results = []
     for eta in LEARNING_RATES:
-        print "\nTrain a network using eta = "+str(eta)
+        print("\nTrain a network using eta = "+str(eta))
+        training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
         net = network2.Network([784, 30, 10])
         results.append(
             net.SGD(training_data, NUM_EPOCHS, 10, eta, lmbda=5.0,
@@ -51,6 +53,7 @@ def run_networks():
     f = open("multiple_eta.json", "w")
     json.dump(results, f)
     f.close()
+
 
 def make_plot():
     f = open("multiple_eta.json", "r")
@@ -67,7 +70,7 @@ def make_plot():
     ax.set_xlabel('Epoch')
     ax.set_ylabel('Cost')
     plt.legend(loc='upper right')
-    plt.show()
+    fig.savefig("multiple_eta.png")
 
 if __name__ == "__main__":
     main()
