@@ -125,6 +125,7 @@ class Network(object):
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             lmbda=0.0,
+            early_stop_in_epochs=10,
             evaluation_data=None,
             monitor_evaluation_cost=False,
             monitor_evaluation_accuracy=False,
@@ -152,6 +153,8 @@ class Network(object):
         training_data = list(training_data)
         n = len(training_data)
         n_data = None
+        best_evaluation_accuracy = 0
+        epochs_since_best_accuracy = 0
 
         if evaluation_data:
             evaluation_data = list(evaluation_data)
@@ -183,7 +186,17 @@ class Network(object):
             if monitor_evaluation_accuracy:
                 accuracy = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
-                print("Accuracy on evaluation data: {} / {}".format(self.accuracy(evaluation_data), n_data))
+                print("Accuracy on evaluation data: {} / {}".format(accuracy, n_data))
+
+                if accuracy > best_evaluation_accuracy:
+                    best_evaluation_accuracy = accuracy
+                    epochs_since_best_accuracy = 0
+                else:
+                    epochs_since_best_accuracy += 1
+                if epochs_since_best_accuracy == early_stop_in_epochs:
+                    print("Stopped after {} epochs with no improvement over the best accuracy: {} / {}.".format(
+                        epochs_since_best_accuracy, best_evaluation_accuracy, n_data))
+                    break
         return evaluation_cost, evaluation_accuracy, training_cost, training_accuracy
 
     def update_mini_batch(self, mini_batch, eta, lmbda, n):
